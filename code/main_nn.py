@@ -18,11 +18,9 @@ data_begin = []  # 初始数据集合
 path = 'dataset/'  # 数据路径
 #path = 'test_data/test_case1_data/'  # 数据路径
 for file in os.listdir(path):
-    if not os.path.isdir(file) and not file[0] == '.':  # 跳过隐藏文件和文件夹
+    if not os.path.isdir(file) and file[0] != '.':  # 跳过隐藏文件和文件夹
         with open(os.path.join(path, file), 'r',  encoding='UTF-8') as f:  # 打开文件
-            for line in f.readlines():
-                data_begin.append((line, author_to_number[file[:-4]]))
-
+            data_begin.extend((line, author_to_number[file[:-4]]) for line in f)
 # 将片段组合在一起后进行词频统计
 fragment = ['' for _ in range(author_number)]
 for sentence, label in data_begin:
@@ -37,7 +35,7 @@ for label, text in enumerate(fragment):  # 提取每个作家频率前200的词�
         else:
             high_words.add(word) # 将高频词汇存入
 
-number_to_word = list(high_words) 
+number_to_word = list(high_words)
 word_number = len(number_to_word)  # 所有高频词汇的个数
 word_to_number = {word: i for i, word in enumerate(number_to_word)} # 建立高频词汇字典，一一对应
 
@@ -85,7 +83,7 @@ history_loss = []
 best_model = model.cpu().state_dict().copy()  # 最优模型
 
 for epoch in range(epochs):  # 开始训练
-    for step, (word_x, word_y) in enumerate(train_loader):
+    for word_x, word_y in train_loader:
         word_x = word_x.to(device)  # 传递数据
         word_y = word_y.to(device)
         out = model(word_x)
